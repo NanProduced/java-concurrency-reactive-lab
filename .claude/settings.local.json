@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__serena__list_dir",
+      "mcp__serena__activate_project",
+      "Bash(mkdir:*)",
+      "SlashCommand(/sc:workflow:*)",
+      "Bash(mvn clean install:*)",
+      "Bash(mvn clean test:*)",
+      "Bash(mvn javadoc:javadoc:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
