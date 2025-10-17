@@ -11,7 +11,13 @@
       "Bash(mvn javadoc:javadoc:*)",
       "Bash(ls:*)",
       "Bash(cat:*)",
-      "mcp__serena__check_onboarding_performed"
+      "mcp__serena__check_onboarding_performed",
+      "Bash(mvn clean compile:*)",
+      "SlashCommand(/sc:task)",
+      "mcp__serena__find_file",
+      "mcp__serena__search_for_pattern",
+      "Bash(mvn exec:java:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

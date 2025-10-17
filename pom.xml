@@ -16,6 +16,7 @@
     <!-- 模块定义 -->
     <modules>
         <module>lab-00-foundation</module>
+        <module>lab-01-thread-basics</module>
     </modules>
 
     <!-- 属性定义 -->

@@ -51,9 +51,9 @@ application-dev.properties
 
 # AI
 
-./.claude
+.claude
 
-./.serena
+.serena
 
 # OS
 Thumbs.db
