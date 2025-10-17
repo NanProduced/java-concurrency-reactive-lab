@@ -49,6 +49,12 @@ logs/
 application-local.properties
 application-dev.properties
 
+# AI
+
+./.claude
+
+./.serena
+
 # OS
 Thumbs.db
 .DS_Store

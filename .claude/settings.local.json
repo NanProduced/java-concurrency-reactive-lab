@@ -8,7 +8,10 @@
       "SlashCommand(/sc:workflow:*)",
       "Bash(mvn clean install:*)",
       "Bash(mvn clean test:*)",
-      "Bash(mvn javadoc:javadoc:*)"
+      "Bash(mvn javadoc:javadoc:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "mcp__serena__check_onboarding_performed"
     ],
     "deny": [],
     "ask": []
