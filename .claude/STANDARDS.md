@@ -137,15 +137,87 @@ public int calculate(int input, double factor) {
 
 ---
 
-## 4. 测试规范
+## 4. 测试策略（2025-10-18 更新）
 
-### 4.1 覆盖率要求
+### 4.1 核心原则
 
-- ✅ 单元测试覆盖率 ≥ 85% (JaCoCo)
-- ✅ 集成测试 ≥ 5 个关键场景
-- ✅ 变异测试覆盖率 ≥ 75% (PIT)
+**有意义的业务逻辑测试 > 盲目追求覆盖率**
 
-### 4.2 测试命名
+### 4.2 测试决策标准
+
+#### ✅ 必须编写测试的场景
+
+1. **核心业务逻辑**
+   - 复杂的算法实现
+   - 关键业务流程
+   - 数据转换和计算逻辑
+   - 示例：线程池参数计算、背压策略实现
+
+2. **并发安全性验证**
+   - 线程安全的数据结构
+   - 锁机制的正确性
+   - 竞态条件验证
+   - 示例：计数器正确性、资源池并发访问
+
+3. **边界条件和异常处理**
+   - 空值、边界值处理
+   - 异常情况的容错
+   - 资源释放的正确性
+
+#### ✅ 推荐编写测试的场景
+
+1. 工具类的关键方法
+2. 配置解析和验证逻辑
+3. 复杂的条件判断
+4. 集成点的交互逻辑
+
+#### ❌ 无需编写测试的场景
+
+1. **简单的 POJO**
+   - Getter/Setter 方法
+   - 简单的构造函数
+   - toString/equals/hashCode（Lombok 生成）
+
+2. **教学演示代码**
+   - Demo 类的 main 方法
+   - 自启动演示程序
+   - 交互式教学代码
+
+3. **配置类**
+   - Spring Boot Configuration
+   - 简单的 Bean 定义
+
+### 4.3 教学型项目特殊规则
+
+本项目是教学型项目，与生产项目有不同的质量标准：
+
+1. **自启动演示 > 单元测试**
+   - 每个 Demo 必须提供可运行的 main 方法
+   - 演示效果比测试覆盖率更重要
+
+2. **注释密度 ≥ 70%**
+   - 丰富的代码注释比单元测试更有教学价值
+   - Javadoc 必须完整且易懂
+
+3. **对比式教学设计**
+   - WITH vs WITHOUT 对比演示
+   - 正确 vs 错误的场景对比
+   - 这些设计比单元测试更能说明问题
+
+### 4.4 AI 决策权限
+
+**AI 自主判断是否需要编写单元测试**，根据：
+1. 代码复杂度（简单逻辑无需测试）
+2. 业务价值（核心逻辑需要测试）
+3. 并发风险（线程安全需要验证）
+4. 教学价值（演示代码优先）
+
+**不强制 JaCoCo 覆盖率指标**，但建议：
+- 核心工具类：覆盖率 ≥ 80%
+- 业务逻辑：覆盖率 ≥ 60%
+- Demo 类：0% 也可接受
+
+### 4.5 测试命名
 
 | 类型 | 命名模式 | 示例 |
 |------|---------|------|
@@ -153,7 +225,24 @@ public int calculate(int input, double factor) {
 | 集成测试 | `*IntegrationTest.java` | `ApplicationConfigIntegrationTest.java` |
 | 基准测试 | `*Benchmark.java` | `ThreadPoolBenchmark.java` |
 
-### 4.3 测试结构
+### 4.6 测试类型指南
+
+#### 单元测试（JUnit 5）
+- 快速、隔离、可重复
+- 使用 `@Test`, `@ParameterizedTest`
+- Mock 外部依赖（Mockito）
+
+#### 并发测试（Awaitility）
+- 验证异步行为
+- 使用 `CountDownLatch` 协调
+- 等待条件满足
+
+#### 集成测试（可选）
+- 使用 `@SpringBootTest`
+- Testcontainers（数据库、消息队列）
+- 仅用于关键集成点
+
+### 4.7 测试结构
 
 ```java
 // Arrange - 准备
@@ -161,7 +250,44 @@ public int calculate(int input, double factor) {
 // Assert - 验证
 ```
 
-### 4.4 压测标准化参数
+### 4.8 示例对比
+
+#### ❌ 错误：为覆盖率而测试
+
+```java
+@Test
+void testGetCount() {
+    Counter counter = new Counter();
+    assertEquals(0, counter.getCount()); // 无意义的测试
+}
+```
+
+#### ✅ 正确：有意义的业务逻辑测试
+
+```java
+@Test
+void testConcurrentIncrement() throws InterruptedException {
+    Counter counter = new Counter();
+    int threads = 100;
+    int increments = 1000;
+
+    // 并发测试线程安全性
+    CountDownLatch latch = new CountDownLatch(threads);
+    for (int i = 0; i < threads; i++) {
+        new Thread(() -> {
+            for (int j = 0; j < increments; j++) {
+                counter.increment();
+            }
+            latch.countDown();
+        }).start();
+    }
+
+    latch.await();
+    assertEquals(threads * increments, counter.getCount());
+}
+```
+
+### 4.9 压测标准化参数
 
 ```
 JVM: -Xmx2g -Xms2g -XX:+UseG1GC
@@ -170,7 +296,7 @@ JVM: -Xmx2g -Xms2g -XX:+UseG1GC
 预热: 30s
 ```
 
-### 4.5 采集指标
+### 4.10 采集指标
 
 - ✅ P50/P95/P99 延迟
 - ✅ 吞吐量 (req/s)
@@ -275,10 +401,11 @@ mvn checkstyle:check
   □ 代码注释密度 ≥ 70%
   □ 关键行有解释
 
-✅ 测试覆盖率
-  □ 单元测试 ≥ 85%
-  □ 集成测试 ≥ 5 场景
-  □ 变异测试 ≥ 75%
+✅ 测试质量（AI 自主决策）
+  □ 核心业务逻辑有测试
+  □ 并发安全性有验证
+  □ 边界条件有覆盖
+  □ 所有测试通过（如果有测试）
 ```
 
 ---
@@ -313,7 +440,10 @@ mvn clean install -DskipTests
 
 ---
 
-**最后更新**: 2024-10-17
+**最后更新**: 2025-10-18
 **维护者**: AI Assistant
 **应用范围**: 所有 Lab 模块
+
+**更新记录**:
+- 2025-10-18: 更新测试规范，反映教学型项目特殊性和 AI 自主决策权
 
