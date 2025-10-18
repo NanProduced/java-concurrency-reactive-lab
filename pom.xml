@@ -17,6 +17,7 @@
     <modules>
         <module>lab-00-foundation</module>
         <module>lab-01-thread-basics</module>
+        <module>lab-02-synchronization</module>
     </modules>
 
     <!-- 属性定义 -->
