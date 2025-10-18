@@ -88,3 +88,4 @@ flamegraph.html
 *.db
 *.sqlite
 *.h2.db
+.worktrees
