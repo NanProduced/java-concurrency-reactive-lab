@@ -65,7 +65,7 @@ Javadoc 覆盖率: 100% (核心类) ✅
 | **03** | **线程池设计** | **Lab-03: Executors & Pools** | **参数计算/拒绝策略/GC影响 + 决策树** | **1周** | ✅ |
 | **04** | **异步编排** | **Lab-04: CompletableFuture** | **异步链式/异常链/超时/MDC穿透** | **1周** | ✅ |
 | **05** | **内存模型深入** | **Lab-05: Memory Model & Patterns** | **JMM深入/发布模式/诊断指南** | **0.5周** | ✅ |
-| **06** | **网络编程基础** | **Lab-06: BIO/NIO** | **阻塞vs非阻塞/Selector/零拷贝** | **1周** | ⏳ |
+| **06** | **网络编程基础** | **Lab-06: BIO/NIO** | **阻塞vs非阻塞/Selector/零拷贝** | **1周** | 🔄 |
 | **07** | **高性能网络** | **Lab-07: Netty** | **事件循环/背压/火焰图对比** | **1周** | ⏳ |
 | **08** | **Servlet异步** | **Lab-08: Spring MVC Async** | **DeferredResult/超时/容错验证** | **0.5周** | ⏳ |
 | **09** | **响应式编程** | **Lab-09: Project Reactor** | **Flux/Mono/调度器/背压/Context** | **1周** | ⏳ |
@@ -283,6 +283,66 @@ Javadoc覆盖:       100% (公开API) ✅
 教学价值评分:       93/100 ✅
 ```
 
+### 🔄 Lab-06 计划（进行中）
+
+**GitHub Issue**: [#2 - Lab-06: BIO/NIO 网络编程基础实现](https://github.com/NanProduced/java-concurrency-reactive-lab/issues/2)
+
+**学习目标**：
+- 理解阻塞 vs 非阻塞 I/O 的本质区别
+- 掌握 Java NIO 的 Selector、Channel、Buffer 核心 API
+- 理解 Reactor 模式（单 Reactor、多 Reactor、主从 Reactor）
+- 掌握零拷贝技术（sendfile）
+- 解决 C10K 问题（10000 并发连接）
+
+| 项目 | 状态 | 备注 |
+|------|------|------|
+| **M1: 核心功能开发（60%）** |  |  |
+| GitHub Issue 创建 | ✅ | [#2 Lab-06: BIO/NIO 网络编程基础实现](https://github.com/NanProduced/java-concurrency-reactive-lab/issues/2) |
+| 前置知识文档（Layer 0） | ⏳ | IO_MODELS.md + TCP_BASICS.md + FILE_DESCRIPTORS.md |
+| BIO Echo Server | ⏳ | 单线程 + 多线程演示 |
+| NIO Echo Server | ⏳ | Selector 多路复用演示 |
+| 零拷贝演示 | ⏳ | 传统 I/O vs FileChannel.transferTo() |
+| BIO 线程池优化 | ⏳ | 线程池限制演示 |
+| Reactor 模式实现 | ⏳ | 主从 Reactor + 架构图 |
+| 性能基准测试 | ⏳ | BIO vs NIO vs Reactor 对比 |
+| 资源泄漏陷阱 | ⏳ | SocketChannel 未关闭演示 |
+| ByteBuffer 陷阱 | ⏳ | flip/clear/compact 常见错误 |
+| Selector 陷阱 | ⏳ | 空轮询 Bug + SelectionKey 泄漏 |
+| **M2: 性能对标（30%）** |  |  |
+| 1K 并发性能对比 | ⏳ | BIO vs NIO (TPS/延迟/CPU/内存) |
+| 10K 并发测试（可选） | ⏳ | 需 ulimit 调优 |
+| 火焰图生成 | ⏳ | async-profiler |
+| 性能数据整理 | ⏳ | Markdown 表格 |
+| **M3: 知识沉淀（10%）** |  |  |
+| 陷阱库更新 | ⏳ | 5 个新陷阱（资源泄漏/Buffer/Selector/TIME_WAIT/越界） |
+| 模板库更新 | ⏳ | 3 个模板（BIO/NIO/Reactor） |
+| 决策树更新 | ⏳ | DT-002: BIO vs NIO 选择 |
+| 脚本库更新 | ⏳ | 压测脚本 + 火焰图生成脚本 |
+| **文档完善** |  |  |
+| README 编写 | ⏳ | 前置知识 + 5天学习路径 + 诊断指南 |
+| DIAGNOSIS_GUIDE.md | ⏳ | 6步诊断流程（ss/lsof/sar/JFR/火焰图） |
+
+**8 大核心改进**（基于 ultrathink 评估结果）：
+1. ✅ 添加 Layer 0 前置知识（降低学习曲线 ~50%）
+2. ✅ 添加架构图 + 流程图（减少注释密度要求至 70%）
+3. ✅ 扩展诊断工具链（ss/lsof/sar/wrk）
+4. ✅ 增加动手实验环节（压测 + 火焰图）
+5. ✅ 优化 5 天学习路径（渐进式难度）
+6. ✅ 优化 README 结构（前置知识独立章节）
+7. ✅ 调整质量标准（允许架构图替代部分注释）
+8. ✅ 建立进阶 Lab（06-14）教学模式
+
+**质量目标**：
+- 代码质量: 40/40
+- 教学设计: 30/30（含架构图）
+- 文档完整: 25/25
+- 知识沉淀: 5/5
+- 目标总分: ≥90/100
+
+**预期学习周期**: 7 天
+
+**风险提示**: 10K 并发测试需系统调优（ulimit、TCP backlog、内核参数）
+
 ### 重构成果（新增）
 
 ```
@@ -342,11 +402,19 @@ Javadoc覆盖:       100% (公开API) ✅
   - 验证标准达成：三下游聚合 + 3 种容错策略
 
 ### 进行中 🔄
-- [ ] Lab-04 知识沉淀（CE 五库更新）
+- [x] Lab-05: 内存模型深入（JMM + 发布模式）✅
+- [ ] Lab-06: 网络编程基础（BIO/NIO）🔄
+  - Issue 已创建: [#2](https://github.com/NanProduced/java-concurrency-reactive-lab/issues/2)
+  - 待启动分支: `feature/lab-06-bio-nio`
+  - 预计完成: Week 4
 
-### 下一步（Week 3-4）
-- [ ] Lab-05: 内存模型深入（JMM + 发布模式）
-- [ ] 性能基线数据采集（可选，或延后到 Lab-12）
+### 下一步（Week 4-5）
+- [ ] Lab-06 核心开发
+  - Layer 0 前置知识文档（降低学习曲线 ~50%）
+  - 9 个核心 Demo（BIO/NIO/零拷贝/Reactor/陷阱）
+  - 性能对标实验（1K/10K 并发）
+  - CE 知识沉淀（5 陷阱 + 3 模板 + 1 决策树）
+- [ ] Lab-07: Netty 高性能网络
 - [ ] 继续完善知识库
 
 ### P2 (可选)
@@ -356,33 +424,45 @@ Javadoc覆盖:       100% (公开API) ✅
 
 ---
 
-**最后更新**: 2025-10-18 15:25 (Lab-03 核心开发完成 - P0 优先策略)
+**最后更新**: 2025-10-18 (Lab-06 GitHub Issue 创建 + 进度文档同步)
 
 **本次成果**:
-  - ✅ Lab-03 核心开发完成（P0 优先策略）
-    - ThreadPoolCalculator.java: 500+ 行核心教学代码（注释密度 ≥ 70%）
-    - 决策树二号增强版: DT-001 完整线程池配置决策流程
-    - Lab-03 README: 完整学习指南（3000+ 字）
-  - ✅ 决策树库更新
-    - DT-001 增强: 新增队列选择、拒绝策略、配置模板、实战示例
-  - ✅ P0 优先策略执行成功
-    - 聚焦核心教学价值
-    - 质量优先于数量
-    - 完成最重要的 80% 内容
+  - ✅ Lab-06 教学内容评估完成（ultrathink 模式 - Sequential 深度分析）
+    - 15步系统性思考完成
+    - 识别8大核心改进点
+    - 教学模式适用性分析完成
+  - ✅ Lab-06 GitHub Issue 创建
+    - Issue #2: [Lab-06: BIO/NIO 网络编程基础实现](https://github.com/NanProduced/java-concurrency-reactive-lab/issues/2)
+    - 完整的 M1/M2/M3 里程碑规划
+    - 9 个核心 Demo 详细规划
+    - 质量标准明确（目标 ≥90/100）
+  - ✅ PROGRESS_TRACKER.md 同步更新
+    - Lab-06 状态更新为 🔄（进行中）
+    - 新增详细工作清单（30+ 子任务）
+    - 8 大核心改进记录
+    - 质量目标和风险提示
 
-**Lab-03 完整成果总结**:
-  - 1 个核心教学演示（ThreadPoolCalculator - 对比式设计）
-  - 3 种任务类型配置公式（CPU/IO/混合）
-  - 4 种拒绝策略对比
-  - 3 种队列类型选择
-  - 决策树二号增强（4 步完整决策流程）
-  - 教学价值评分: 预计 ≥ 90/100 ✅
+**Lab-06 核心改进总结**（基于 ultrathink 评估）:
+  1. ✅ 添加 Layer 0 前置知识（降低学习曲线 ~50%）
+  2. ✅ 添加架构图 + 流程图（减少注释密度要求至 70%）
+  3. ✅ 扩展诊断工具链（ss/lsof/sar/wrk）
+  4. ✅ 增加动手实验环节（压测 + 火焰图）
+  5. ✅ 优化 5 天学习路径（渐进式难度）
+  6. ✅ 优化 README 结构（前置知识独立章节）
+  7. ✅ 调整质量标准（允许架构图替代部分注释）
+  8. ✅ 建立进阶 Lab（06-14）教学模式
+
+**Lab-06 规划成果**:
+  - M1: 核心功能开发（60%）- 9 个 Demo（BIO/NIO/零拷贝/Reactor/陷阱）
+  - M2: 性能对标（30%）- 1K/10K 并发对比 + 火焰图
+  - M3: 知识沉淀（10%）- 5 陷阱 + 3 模板 + 1 决策树（DT-002）
+  - 教学价值评分: 目标 ≥90/100 ✅
 
 **知识复用进展**:
-  - 常见坑库: 17/50+ (34%) - 待补充 Lab-03 新坑
-  - 决策树库: 1增强/10+ (10% 完成，DT-001 增强)
-  - 模板库: 10/30+ (33%) - 新增 3 个线程池模板
-  - 预期复用率: ≥ 70% in Lab-04+
+  - 常见坑库: 17/50+ (34%) - 待补充 Lab-06 新坑（5个）
+  - 决策树库: 1增强/10+ (10% 完成) - 待添加 DT-002（BIO vs NIO）
+  - 模板库: 10/30+ (33%) - 待添加 Lab-06 模板（3个）
+  - 预期复用率: ≥ 70% in Lab-07+
 
-**下次更新**: Lab-03 知识沉淀完成后
+**下次更新**: Lab-06 核心开发启动后
 
