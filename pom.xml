@@ -19,6 +19,7 @@
         <module>lab-01-thread-basics</module>
         <module>lab-02-synchronization</module>
         <module>lab-03-executors</module>
+        <module>lab-04-completablefuture</module>
     </modules>
 
     <!-- 属性定义 -->
