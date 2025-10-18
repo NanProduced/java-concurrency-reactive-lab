@@ -298,7 +298,10 @@ Javadoc覆盖:       100% (公开API) ✅
 |------|------|------|
 | **M1: 核心功能开发（60%）** |  |  |
 | GitHub Issue 创建 | ✅ | [#2 Lab-06: BIO/NIO 网络编程基础实现](https://github.com/NanProduced/java-concurrency-reactive-lab/issues/2) |
-| 前置知识文档（Layer 0） | ⏳ | IO_MODELS.md + TCP_BASICS.md + FILE_DESCRIPTORS.md |
+| 项目结构创建 | ✅ | Maven 配置 + 目录结构（bio/nio/zerocopy/reactor/benchmark/pitfalls） |
+| 前置知识文档：IO_MODELS.md | ✅ | 5种 I/O 模型对比（3500+ 字 + 5个状态机 + 决策树） |
+| 前置知识文档：TCP_BASICS.md | ⏳ | 三次握手/四次挥手 + TCP 状态机 |
+| 前置知识文档：FILE_DESCRIPTORS.md | ⏳ | 文件描述符管理 + ulimit 调优 |
 | BIO Echo Server | ⏳ | 单线程 + 多线程演示 |
 | NIO Echo Server | ⏳ | Selector 多路复用演示 |
 | 零拷贝演示 | ⏳ | 传统 I/O vs FileChannel.transferTo() |
@@ -424,39 +427,46 @@ Javadoc覆盖:       100% (公开API) ✅
 
 ---
 
-**最后更新**: 2025-10-18 (Lab-06 GitHub Issue 创建 + 进度文档同步)
+**最后更新**: 2025-10-19 00:00 (Lab-06 开发启动 - 项目结构 + 前置知识文档)
 
 **本次成果**:
-  - ✅ Lab-06 教学内容评估完成（ultrathink 模式 - Sequential 深度分析）
-    - 15步系统性思考完成
-    - 识别8大核心改进点
-    - 教学模式适用性分析完成
-  - ✅ Lab-06 GitHub Issue 创建
-    - Issue #2: [Lab-06: BIO/NIO 网络编程基础实现](https://github.com/NanProduced/java-concurrency-reactive-lab/issues/2)
-    - 完整的 M1/M2/M3 里程碑规划
-    - 9 个核心 Demo 详细规划
-    - 质量标准明确（目标 ≥90/100）
-  - ✅ PROGRESS_TRACKER.md 同步更新
-    - Lab-06 状态更新为 🔄（进行中）
-    - 新增详细工作清单（30+ 子任务）
-    - 8 大核心改进记录
-    - 质量目标和风险提示
+  - ✅ Lab-06 开发环境准备
+    - 创建 `feature/lab-06-bio-nio` 分支
+    - Maven 项目结构初始化完成
+    - 父 pom.xml 添加 lab-06-bio-nio 模块
+  - ✅ Lab-06 项目结构创建
+    - 完整目录结构（bio/nio/zerocopy/reactor/benchmark/pitfalls）
+    - Maven 配置验证通过
+    - src/main/java 和 src/test/java 完整结构
+  - ✅ Layer 0 前置知识文档（1/3 完成）
+    - **IO_MODELS.md** 完成（3500+ 字）
+      - 5种 I/O 模型详细对比（阻塞/非阻塞/多路复用/信号驱动/异步）
+      - 5个状态机图 + 完整对比表
+      - Java BIO/NIO/AIO 映射关系
+      - C10K 问题解析 + 决策树
+      - 常见误区与陷阱分析
+  - ✅ 代码提交
+    - Commit: `feat(lab-06): 初始化 BIO/NIO 网络编程模块`
+    - 包含项目结构 + IO_MODELS.md 完整文档
 
-**Lab-06 核心改进总结**（基于 ultrathink 评估）:
-  1. ✅ 添加 Layer 0 前置知识（降低学习曲线 ~50%）
-  2. ✅ 添加架构图 + 流程图（减少注释密度要求至 70%）
-  3. ✅ 扩展诊断工具链（ss/lsof/sar/wrk）
-  4. ✅ 增加动手实验环节（压测 + 火焰图）
-  5. ✅ 优化 5 天学习路径（渐进式难度）
-  6. ✅ 优化 README 结构（前置知识独立章节）
-  7. ✅ 调整质量标准（允许架构图替代部分注释）
-  8. ✅ 建立进阶 Lab（06-14）教学模式
+**Lab-06 进度总结**（M1: 核心功能开发 - 60%）:
+  - ✅ GitHub Issue 创建（Issue #2）
+  - ✅ 项目结构创建（Maven + 目录）
+  - ✅ 前置知识文档 1/3（IO_MODELS.md）
+  - ⏳ 前置知识文档 2/3（TCP_BASICS.md）
+  - ⏳ 前置知识文档 3/3（FILE_DESCRIPTORS.md）
+  - ⏳ 9 个核心 Demo（BIO/NIO/零拷贝/Reactor/陷阱）
+  - **当前进度**: M1 约 10% 完成
 
-**Lab-06 规划成果**:
-  - M1: 核心功能开发（60%）- 9 个 Demo（BIO/NIO/零拷贝/Reactor/陷阱）
-  - M2: 性能对标（30%）- 1K/10K 并发对比 + 火焰图
-  - M3: 知识沉淀（10%）- 5 陷阱 + 3 模板 + 1 决策树（DT-002）
-  - 教学价值评分: 目标 ≥90/100 ✅
+**8 大核心改进落地**（基于 ultrathink 评估）:
+  1. ✅ Layer 0 前置知识 - IO_MODELS.md 完成（1/3）
+  2. ✅ 架构图 + 流程图 - 5个状态机图完成
+  3. ⏳ 扩展诊断工具链（ss/lsof/sar/wrk）
+  4. ⏳ 动手实验环节（压测 + 火焰图）
+  5. ⏳ 5 天学习路径（渐进式难度）
+  6. ⏳ README 结构优化
+  7. ✅ 质量标准调整（允许架构图替代注释）
+  8. ✅ 进阶 Lab 教学模式建立
 
 **知识复用进展**:
   - 常见坑库: 17/50+ (34%) - 待补充 Lab-06 新坑（5个）
@@ -464,5 +474,10 @@ Javadoc覆盖:       100% (公开API) ✅
   - 模板库: 10/30+ (33%) - 待添加 Lab-06 模板（3个）
   - 预期复用率: ≥ 70% in Lab-07+
 
-**下次更新**: Lab-06 核心开发启动后
+**下次目标**:
+  1. 完成 TCP_BASICS.md 和 FILE_DESCRIPTORS.md（Layer 0 剩余文档）
+  2. 开始 BIOEchoServer.java 核心 Demo 开发
+  3. 实现 NIOEchoServer.java（Selector 多路复用）
+
+**下次更新**: 完成 Layer 0 前置知识文档后
 
