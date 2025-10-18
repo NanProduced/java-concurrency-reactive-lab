@@ -20,6 +20,7 @@
         <module>lab-02-synchronization</module>
         <module>lab-03-executors</module>
         <module>lab-04-completablefuture</module>
+        <module>lab-05-memory-model</module>
     </modules>
 
     <!-- 属性定义 -->
