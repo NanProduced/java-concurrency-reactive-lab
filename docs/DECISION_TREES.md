@@ -21,107 +21,290 @@
 
 ---
 
-## DT-001: 线程池大小计算
+## DT-001: 线程池配置完整决策树（增强版）
 
-**应用场景**: 创建自定义线程池时的关键决策
+**应用场景**: 创建自定义线程池时的完整配置决策
+**更新日期**: 2025-10-18（Lab-03 增强）
 
-### 决策流程
+### 第 1 步：任务类型识别
 
 ```
-当前有新的并发任务?
-  ├─ YES: 需要线程池 → 继续
-  └─ NO: 返回（使用 ForkJoinPool）
-
-任务特性是什么?
-  ├─ CPU 密集型
-  │  ├─ 核心线程数 = CPU 核数
-  │  ├─ 最大线程数 = CPU 核数
-  │  ├─ 队列容量 = 100-200
-  │  └─ 公式: N = CPU_count * 1.0
+任务特性是什么？
+  ├─ CPU 密集型（持续计算，无 IO 等待）
+  │  例如：图像处理、视频编码、数据压缩、加密解密、科学计算
+  │  特征：CPU 使用率接近 100%，很少有线程阻塞
+  │  → 进入 CPU 密集型配置流程
   │
-  ├─ IO 密集型
-  │  ├─ 核心线程数 = CPU 核数
-  │  ├─ 最大线程数 = CPU 核数 * (5-10)
-  │  ├─ 队列容量 = 1000-5000
-  │  └─ 公式: N = CPU_count * U_cpu * (1 + W/C)
+  ├─ IO 密集型（大量 IO 等待）
+  │  例如：数据库查询、网络请求、文件读写、RPC 调用
+  │  特征：CPU 使用率低（<30%），线程大量时间在等待
+  │  → 进入 IO 密集型配置流程
   │
-  └─ 混合型
-     ├─ 分离为两个线程池（CPU + IO）
-     └─ 分别按各自特性配置
+  └─ 混合型（既有计算又有 IO）
+     例如：Web 应用、微服务、数据处理管道
+     特征：CPU 使用率中等（30-70%），有一定的计算和 IO
+     → 进入混合型配置流程
 ```
 
-### 公式详解
+### 第 2 步：线程池大小计算
 
-**IO 密集型线程池大小公式**:
+#### 2.1 CPU 密集型配置
+
 ```
-N_threads = N_cpu * U_cpu * (1 + W/C)
+核心线程数 = CPU 核数 + 1
+最大线程数 = CPU 核数 + 1
+
+为什么 +1？
+  - 当某个线程偶尔因为页缺失或其他原因暂停时
+  - 额外的线程可以补上，保证 CPU 利用率接近 100%
+
+示例（8 核机器）：
+  corePoolSize    = 9
+  maximumPoolSize = 9
+```
+
+#### 2.2 IO 密集型配置（Amdahl 定律）
+
+```
+核心线程数 = CPU 核数 * (1 + W/C)
+最大线程数 = 核心线程数 * 2
 
 其中:
-  N_cpu = 处理器数量 (CPU 核数)
-  U_cpu = 目标 CPU 利用率 (0-1)
-  W/C = 等待时间 / 计算时间的比率
+  W = 等待时间 (Wait Time)
+  C = 计算时间 (Compute Time)
+
+如何估算 W/C：
+  1. 使用分析工具（JProfiler、YourKit）
+  2. 经验值：
+     - 数据库查询（简单）: W/C ≈ 2-4
+     - 数据库查询（复杂）: W/C ≈ 5-10
+     - HTTP 请求: W/C ≈ 10-20
+     - 文件 IO: W/C ≈ 1-3
+
+示例（8 核机器，W/C = 4）：
+  corePoolSize    = 8 * (1 + 4) = 40
+  maximumPoolSize = 40 * 2 = 80
+```
+
+#### 2.3 混合型配置（经验公式）
+
+```
+核心线程数 = CPU 核数 * 2
+最大线程数 = 核心线程数 * 2
+
+这是大多数 Web 应用和微服务的推荐配置
+
+示例（8 核机器）：
+  corePoolSize    = 16
+  maximumPoolSize = 32
+```
+
+### 第 3 步：队列类型选择
+
+```
+队列类型决策：
+
+问题：任务到达后能否立即执行？
+  ├─ 是（低延迟要求）→ SynchronousQueue
+  │  特点：不缓冲任务，必须有空闲线程才接受任务
+  │  适用：CPU 密集型、实时系统
+  │  容量：0
+  │
+  └─ 否（允许缓冲）→ 是否有明确的内存限制？
+      ├─ 是 → ArrayBlockingQueue
+      │  特点：数组实现，内存局部性好，有界
+      │  适用：混合型任务、内存敏感场景
+      │  容量：建议 500-2000
+      │
+      └─ 否 → LinkedBlockingQueue
+         特点：链表实现，性能稳定，有界
+         适用：IO 密集型、高吞吐量场景
+         容量：建议 1000-5000
+         ⚠️ 不要使用 Integer.MAX_VALUE（无界），可能 OOM
+```
+
+### 第 4 步：拒绝策略选择
+
+```
+拒绝策略决策：
+
+问题：队列满时如何处理新任务？
+  ├─ 需要快速失败通知调用方？
+  │  → AbortPolicy（抛出 RejectedExecutionException）
+  │  适用：IO 密集型、需要感知系统过载
+  │
+  ├─ 需要背压（反压）机制？
+  │  → CallerRunsPolicy（调用者线程执行）
+  │  适用：CPU 密集型、混合型、Web 应用
+  │  效果：降低任务提交速度，避免系统崩溃
+  │
+  ├─ 可以静默丢弃任务？
+  │  → DiscardPolicy（静默丢弃）
+  │  适用：日志、监控数据（非关键任务）
+  │  ⚠️ 需要监控丢弃率
+  │
+  └─ 可以丢弃旧任务，保留新任务？
+     → DiscardOldestPolicy（丢弃队列头部最老的任务）
+     适用：实时数据处理（最新数据更重要）
+     ⚠️ 可能丢失重要任务
+```
+
+### 完整配置模板
+
+#### 模板 1: CPU 密集型任务
+
+```java
+int cpuCores = Runtime.getRuntime().availableProcessors();
+
+ThreadPoolExecutor executor = new ThreadPoolExecutor(
+    cpuCores + 1,              // corePoolSize
+    cpuCores + 1,              // maximumPoolSize
+    60L,                       // keepAliveTime
+    TimeUnit.SECONDS,
+    new SynchronousQueue<>(),  // workQueue: 不缓冲
+    new ThreadPoolExecutor.CallerRunsPolicy()  // 背压机制
+);
+
+// 适用场景：图像处理、视频编码、数据压缩
+```
+
+#### 模板 2: IO 密集型任务
+
+```java
+int cpuCores = Runtime.getRuntime().availableProcessors();
+double waitComputeRatio = 4.0; // W/C = 4 (80% 时间在等待 IO)
+
+ThreadPoolExecutor executor = new ThreadPoolExecutor(
+    (int) (cpuCores * (1 + waitComputeRatio)), // corePoolSize
+    (int) (cpuCores * (1 + waitComputeRatio) * 2), // maximumPoolSize
+    60L,                                       // keepAliveTime
+    TimeUnit.SECONDS,
+    new LinkedBlockingQueue<>(1000),           // workQueue: 有界缓冲
+    new ThreadPoolExecutor.AbortPolicy()       // 快速失败
+);
+
+// 适用场景：数据库查询、HTTP 请求、文件 IO
+```
+
+#### 模板 3: 混合型任务
+
+```java
+int cpuCores = Runtime.getRuntime().availableProcessors();
+
+ThreadPoolExecutor executor = new ThreadPoolExecutor(
+    cpuCores * 2,              // corePoolSize
+    cpuCores * 4,              // maximumPoolSize
+    60L,                       // keepAliveTime
+    TimeUnit.SECONDS,
+    new ArrayBlockingQueue<>(500), // workQueue: 有界缓冲
+    new ThreadPoolExecutor.CallerRunsPolicy() // 背压机制
+);
+
+// 适用场景：Web 应用、微服务、批处理
 ```
 
 ### 计算示例
 
-**示例 1: IO 密集型 (数据库查询)**
+**场景 1: 数据库查询服务（8 核机器）**
 ```
-配置:
-  - CPU 核数: 8
-  - 目标 CPU 利用率: 70% (0.7)
-  - W/C 比率: 10:1 (大量等待 IO)
+任务分析:
+  - 任务类型: IO 密集型
+  - 每次查询: 计算 20ms，等待数据库 80ms
+  - W/C = 80/20 = 4
 
-计算:
-  N = 8 * 0.7 * (1 + 10/1)
-    = 8 * 0.7 * 11
-    = 61.6
+配置计算:
+  核心线程数 = 8 * (1 + 4) = 40
+  最大线程数 = 40 * 2 = 80
+  队列类型 = LinkedBlockingQueue(1000)
+  拒绝策略 = AbortPolicy（快速失败）
 
-建议: 核心线程 = 8, 最大线程 = 64
-```
-
-**示例 2: CPU 密集型 (算法计算)**
-```
-配置:
-  - CPU 核数: 8
-  - 目标 CPU 利用率: 100% (1.0)
-  - W/C 比率: 0:1 (几乎无等待)
-
-计算:
-  N = 8 * 1.0 * (1 + 0/1)
-    = 8 * 1.0 * 1
-    = 8
-
-建议: 核心线程 = 8, 最大线程 = 8
+代码:
+  new ThreadPoolExecutor(40, 80, 60L, TimeUnit.SECONDS,
+      new LinkedBlockingQueue<>(1000),
+      new ThreadPoolExecutor.AbortPolicy())
 ```
 
-### 决策建议
+**场景 2: 图像处理服务（8 核机器）**
+```
+任务分析:
+  - 任务类型: CPU 密集型
+  - 持续计算，无 IO 等待
 
-| 场景 | 核心线程 | 最大线程 | 队列容量 | 保活时间 |
-|------|---------|---------|---------|---------|
-| CPU 密集 | CPU数 | CPU数 | 100 | 300s |
-| IO 密集 | CPU数 | CPU数*5-10 | 1000-5000 | 300s |
-| 异步任务 | CPU数 | CPU数*2 | 1000 | 300s |
-| 定时任务 | CPU数 | CPU数 | 100 | 60s |
+配置计算:
+  核心线程数 = 8 + 1 = 9
+  最大线程数 = 9
+  队列类型 = SynchronousQueue（不缓冲）
+  拒绝策略 = CallerRunsPolicy（背压）
+
+代码:
+  new ThreadPoolExecutor(9, 9, 60L, TimeUnit.SECONDS,
+      new SynchronousQueue<>(),
+      new ThreadPoolExecutor.CallerRunsPolicy())
+```
+
+**场景 3: Web 应用（8 核机器）**
+```
+任务分析:
+  - 任务类型: 混合型
+  - 请求处理 + 数据库查询 + 业务逻辑
+
+配置计算:
+  核心线程数 = 8 * 2 = 16
+  最大线程数 = 16 * 2 = 32
+  队列类型 = ArrayBlockingQueue(500)
+  拒绝策略 = CallerRunsPolicy（背压）
+
+代码:
+  new ThreadPoolExecutor(16, 32, 60L, TimeUnit.SECONDS,
+      new ArrayBlockingQueue<>(500),
+      new ThreadPoolExecutor.CallerRunsPolicy())
+```
+
+### 快速参考表（8 核机器）
+
+| 任务类型 | 核心线程 | 最大线程 | 队列类型 | 队列容量 | 拒绝策略 |
+|---------|---------|---------|---------|---------|---------|
+| **CPU 密集** | 9 | 9 | SynchronousQueue | 0 | CallerRunsPolicy |
+| **IO 密集**（W/C=4） | 40 | 80 | LinkedBlockingQueue | 1000 | AbortPolicy |
+| **混合型** | 16 | 32 | ArrayBlockingQueue | 500 | CallerRunsPolicy |
+| **异步任务** | 16 | 32 | LinkedBlockingQueue | 1000 | AbortPolicy |
+| **定时任务** | 8 | 8 | DelayQueue | - | AbortPolicy |
+
+### 调优建议
+
+1. **从经验值开始**: 使用上述公式和模板作为起点
+2. **压测验证**: 模拟实际负载，观察性能指标
+3. **监控关键指标**:
+   - 活跃线程数 vs 核心线程数
+   - 队列长度 vs 队列容量
+   - 任务拒绝率
+   - P95/P99 延迟
+4. **逐步调整**: 每次调整 20-30%，观察效果
+5. **记录结果**: 建立自己的性能基线数据
+
+### 常见陷阱
+
+| 陷阱 | 问题 | 解决方案 |
+|------|------|---------|
+| ❌ 线程数过多 | 频繁上下文切换，性能下降 | 使用公式计算，不要拍脑袋 |
+| ❌ 线程数过少 | CPU 利用率低，吞吐量不足 | 根据 W/C 比例增加线程 |
+| ❌ 无界队列 | 内存溢出（OOM） | 使用有界队列，设置合理容量 |
+| ❌ 拒绝策略不当 | 任务丢失或系统崩溃 | 根据业务需求选择策略 |
+| ❌ 未监控指标 | 无法发现性能问题 | 集成 Micrometer/Prometheus |
 
 ### 参考实现
 
-查看 Lab-00 中的实现:
-- `ApplicationConfiguration.java:54` - asyncExecutor
-- `ApplicationConfiguration.java:84` - ioExecutor
-- `ApplicationConfiguration.java:115` - cpuExecutor
-- `ThreadUtil.java:117` - calculateOptimalThreadPoolSize()
+查看以下实现获取完整代码：
+- **Lab-03**: `ThreadPoolCalculator.java` - 完整的参数计算和对比演示
+- **Lab-00**: `ApplicationConfiguration.java` - 实际生产配置
+- **Lab-00**: `ThreadUtil.java` - 工具方法
 
 ### 参考资源
 
 1. **Java Concurrency in Practice** (Brian Goetz et al.)
    - Chapter 8: Applying Thread Pools
-   - 线程池大小计算的经典参考
-
-2. **Thread Pool Sizing**
-   - https://docs.oracle.com/javase/tutorial/concurrency/pools/
-
-3. **Tomcat ThreadPool Configuration**
-   - 实际生产环境的配置参考
+2. **Oracle Java Concurrency Tutorial**
+3. **Lab-03 README**: 线程池配置完整指南
 
 ---
 
