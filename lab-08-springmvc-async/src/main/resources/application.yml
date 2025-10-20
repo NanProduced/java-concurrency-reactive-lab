@@ -1,0 +1,58 @@
+# Lab-08 Spring MVC Async 配置
+spring:
+  application:
+    name: lab-08-springmvc-async
+
+  # MVC 异步配置
+  mvc:
+    async:
+      request-timeout: 30000  # 全局默认超时 30 秒
+
+  # 任务执行配置 (Spring Boot 3.x)
+  task:
+    execution:
+      pool:
+        core-size: 10          # 核心线程数 (IO 密集型: CPU * 2)
+        max-size: 50           # 最大线程数 (IO 密集型: CPU * 4)
+        queue-capacity: 100    # 队列容量
+        keep-alive: "60s"      # 线程存活时间
+      thread-name-prefix: "async-mvc-"
+      shutdown:
+        await-termination: true
+        await-termination-period: "30s"
+
+  # Jackson 配置
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  tomcat:
+    threads:
+      max: 200              # Tomcat 最大线程数
+      min-spare: 10         # 最小空闲线程数
+    accept-count: 100       # 请求队列长度
+
+# Actuator 监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,threaddump
+  endpoint:
+    health:
+      show-details: always
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    nan.tech.lab08: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter: TRACE
