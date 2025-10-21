@@ -216,9 +216,6 @@ public class ReactorBenchmark {
             bossThread.start();
         }
 
-        /**
-         * 停止服务器
-         */
         public void stop() {
             running = false;
             if (bossThread != null) {
@@ -226,7 +223,7 @@ public class ReactorBenchmark {
             }
             if (subReactors != null) {
                 for (SubReactor reactor : subReactors) {
-                    reactor.stop();
+                    reactor.stopReactor();
                 }
             }
         }
@@ -301,10 +298,7 @@ public class ReactorBenchmark {
             selector.wakeup(); // 唤醒 select()
         }
 
-        /**
-         * 停止 Reactor
-         */
-        public void stop() {
+        public void stopReactor() {
             running = false;
             interrupt();
             try {

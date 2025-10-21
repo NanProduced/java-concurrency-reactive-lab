@@ -33,6 +33,12 @@
 **快速启动**:
 
 ```bash
+# 方式 1: 交互式菜单（推荐在 IDE 中使用）
+# 无参数启动，会显示菜单选择
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer"
+
+# 方式 2: 命令行参数（适合脚本和自动化）
+
 # 单线程模式
 mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer" -Dexec.args="single"
 
@@ -77,8 +83,17 @@ mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer" -Dexec.args="p
 **快速启动**:
 
 ```bash
-# 启动 NIO Echo Server
+# 方式 1: 交互式菜单（推荐在 IDE 中使用）
+# 无参数启动，会提示输入端口号
 mvn exec:java -Dexec.mainClass="nan.tech.lab06.nio.NIOEchoServer"
+
+# 方式 2: 命令行参数（适合脚本和自动化）
+
+# 使用默认端口 8080
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.nio.NIOEchoServer"
+
+# 指定端口 9090
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.nio.NIOEchoServer" -Dexec.args="9090"
 
 # 并发测试（1000 客户端）
 mvn exec:java -Dexec.mainClass="nan.tech.lab06.nio.NIOEchoClient" \
@@ -187,12 +202,20 @@ mvn exec:java -Dexec.mainClass="nan.tech.lab06.zerocopy.ZeroCopyDemo" \
 **快速启动**:
 
 ```bash
-# 启动主从 Reactor Echo Server（默认 CPU 核心数个 Worker）
+# 方式 1: 交互式菜单（推荐在 IDE 中使用）
+# 无参数启动，会提示输入端口号和 Worker 数量
 mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer"
 
-# 指定 Worker 数量
-mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer" \
-  -Dexec.args="8080 4"
+# 方式 2: 命令行参数（适合脚本和自动化）
+
+# 使用默认配置（端口 8080，Worker 数 = CPU 核心数）
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer"
+
+# 指定端口 9090，默认 Worker 数
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer" -Dexec.args="9090"
+
+# 指定端口 8080 和 Worker 数 4
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer" -Dexec.args="8080 4"
 ```
 
 **Netty 线程模型映射**:
@@ -229,6 +252,14 @@ mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer" \
 
 **动手实验**:
 ```bash
+# 方式 1: 交互式菜单（推荐）
+# 启动 BIO Server - 选择选项 1
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer"
+
+# 并发测试（观察串行处理）
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoClient" -Dexec.args="concurrent 10 10"
+
+# 方式 2: 命令行参数
 # 启动单线程服务器
 mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer" -Dexec.args="single"
 
@@ -258,7 +289,12 @@ mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoClient" -Dexec.args="c
 
 **动手实验**:
 ```bash
-# 启动 NIO Echo Server
+# 方式 1: 交互式菜单（推荐）
+# 启动 NIO Server - 回车使用默认端口 8080
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.nio.NIOEchoServer"
+
+# 方式 2: 命令行参数
+# 启动 NIO Echo Server（默认端口 8080）
 mvn exec:java -Dexec.mainClass="nan.tech.lab06.nio.NIOEchoServer"
 
 # 并发测试（1000 客户端）
@@ -309,7 +345,12 @@ mvn exec:java -Dexec.mainClass="nan.tech.lab06.zerocopy.ZeroCopyDemo" \
 
 **动手实验**:
 ```bash
-# 启动主从 Reactor Echo Server（4 Worker）
+# 方式 1: 交互式菜单（推荐）
+# 启动主从 Reactor Server - 依次输入端口 8080 和 Worker 数 4
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer"
+
+# 方式 2: 命令行参数
+# 启动主从 Reactor Echo Server（端口 8080，4 个 Worker）
 mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer" \
   -Dexec.args="8080 4"
 
@@ -337,6 +378,10 @@ mvn exec:java -Dexec.mainClass="nan.tech.lab06.nio.NIOEchoClient" \
 **动手实验**:
 ```bash
 # 1. 启动 BIO 多线程服务器
+# 方式 A: 交互式菜单 - 选择选项 2
+mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer"
+
+# 方式 B: 命令行参数
 mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer" -Dexec.args="multi"
 
 # 2. 并发测试 + 诊断
@@ -347,6 +392,8 @@ mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoClient" -Dexec.args="c
 # Linux: ss -tnp | grep 8080
 
 # 4. 重复步骤 1-3，分别测试 NIO 和 Reactor 模式
+# NIO: mvn exec:java -Dexec.mainClass="nan.tech.lab06.nio.NIOEchoServer" -Dexec.args="8080"
+# Reactor: mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer" -Dexec.args="8080 4"
 ```
 
 **学习重点**:

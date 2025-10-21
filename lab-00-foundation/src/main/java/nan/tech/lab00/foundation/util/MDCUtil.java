@@ -4,7 +4,6 @@ import org.slf4j.MDC;
 
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Runnable;
 import java.util.function.Supplier;
 
 /**

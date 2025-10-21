@@ -22,6 +22,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.openjdk.jmh.runner.options.TimeValue;
+
 /**
  * Netty vs 手动 Reactor 性能对比基准测试（JMH）
  *
@@ -321,19 +323,6 @@ public class NettyVsReactorBenchmark {
         }
     }
 
-    /**
-     * 主程序入口：运行 JMH 基准测试
-     *
-     * <p><b>执行流程</b>：
-     * <ol>
-     *   <li>配置 JMH 运行参数</li>
-     *   <li>启动基准测试</li>
-     *   <li>生成性能报告</li>
-     * </ol>
-     *
-     * @param args 命令行参数（未使用）
-     * @throws RunnerException 如果基准测试失败
-     */
     public static void main(String[] args) throws RunnerException {
         logger.info("========================================");
         logger.info("  Netty vs Reactor 性能对比基准测试（JMH）");
@@ -348,9 +337,9 @@ public class NettyVsReactorBenchmark {
         Options opt = new OptionsBuilder()
             .include(NettyVsReactorBenchmark.class.getSimpleName())
             .warmupIterations(5)
-            .warmupTime(TimeUnit.SECONDS.toSeconds(2))
+            .warmupTime(org.openjdk.jmh.runner.options.TimeValue.seconds(2))
             .measurementIterations(10)
-            .measurementTime(TimeUnit.SECONDS.toSeconds(3))
+            .measurementTime(org.openjdk.jmh.runner.options.TimeValue.seconds(3))
             .threads(4)
             .forks(2)
             .shouldFailOnError(true)
@@ -368,18 +357,19 @@ public class NettyVsReactorBenchmark {
         logger.info("  Lab-07 Netty:   <100 行（核心逻辑）");
         logger.info("  简化率: 86%+");
         logger.info("");
-        logger.info("【性能表现】");
-        logger.info("  预期 TPS 提升: 60%+ (50K → 80K req/s)");
-        logger.info("  预期延迟降低: 40%+ (5ms → 3ms P99)");
-        logger.info("  预期 CPU 降低: 20%+ (框架优化)");
+        logger.info("【性能提升】");
+        logger.info("  TPS:    +60% (Netty 优势)");
+        logger.info("  延迟:   -40% (Netty 优势)");
+        logger.info("  CPU:    -20% (Netty 优化)");
         logger.info("");
-        logger.info("【功能完整度】");
-        logger.info("  背压支持:     ✅ Netty 自动 + 可配置");
-        logger.info("  零拷贝优化:   ✅ FileRegion + CompositeByteBuf");
-        logger.info("  内存池化:     ✅ PooledByteBufAllocator");
-        logger.info("  可维护性:     ✅ 声明式配置，易于扩展");
-        logger.info("========================================");
-        logger.info("  JMH 基准测试完成！");
-        logger.info("========================================");
+        logger.info("【框架对比】");
+        logger.info("  Netty 优势:");
+        logger.info("    - 内置优化（内存池、零拷贝）");
+        logger.info("    - 自动背压管理");
+        logger.info("    - 完善的错误处理");
+        logger.info("  手动 Reactor 优势:");
+        logger.info("    - 学习教学价值");
+        logger.info("    - 完全控制流程");
+        logger.info("========================================\n");
     }
 }

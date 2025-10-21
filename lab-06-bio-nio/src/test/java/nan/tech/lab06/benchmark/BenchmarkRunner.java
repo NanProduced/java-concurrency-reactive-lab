@@ -72,14 +72,6 @@ import java.util.Collection;
  */
 public class BenchmarkRunner {
 
-    /**
-     * 主方法：运行所有 Benchmark
-     *
-     * @param args 命令行参数
-     *             --quick: 快速模式（减少迭代次数）
-     *             --pattern <regex>: 只运行匹配的 benchmark
-     * @throws RunnerException 如果 JMH 运行失败
-     */
     public static void main(String[] args) throws RunnerException {
         boolean quickMode = false;
         String pattern = ".*Benchmark.*"; // 默认运行所有
@@ -100,31 +92,18 @@ public class BenchmarkRunner {
         System.out.println("Pattern: " + pattern);
         System.out.println("========================================\n");
 
-        // 配置 JMH
-        OptionsBuilder optBuilder = new OptionsBuilder()
+        // 配置 JMH - 使用三元运算符选择迭代次数，避免类型转换问题
+        Options opt = new OptionsBuilder()
             .include(pattern)
             .forks(1)
             .threads(10) // 模拟 10 个并发客户端
             .shouldFailOnError(true)
-            .jvmArgs("-Xms2g", "-Xmx2g"); // 固定堆大小避免 GC 干扰
-
-        if (quickMode) {
-            // 快速模式：减少迭代次数
-            optBuilder
-                .warmupIterations(1)
-                .warmupTime(TimeValue.seconds(3))
-                .measurementIterations(2)
-                .measurementTime(TimeValue.seconds(5));
-        } else {
-            // 完整模式：生产级测试
-            optBuilder
-                .warmupIterations(2)
-                .warmupTime(TimeValue.seconds(5))
-                .measurementIterations(3)
-                .measurementTime(TimeValue.seconds(10));
-        }
-
-        Options opt = optBuilder.build();
+            .warmupIterations(quickMode ? 1 : 2)
+            .warmupTime(TimeValue.seconds(quickMode ? 3 : 5))
+            .measurementIterations(quickMode ? 2 : 3)
+            .measurementTime(TimeValue.seconds(quickMode ? 5 : 10))
+            .jvmArgs("-Xms2g", "-Xmx2g") // 固定堆大小避免 GC 干扰
+            .build();
 
         // 运行 Benchmark
         Collection<RunResult> results = new Runner(opt).run();
