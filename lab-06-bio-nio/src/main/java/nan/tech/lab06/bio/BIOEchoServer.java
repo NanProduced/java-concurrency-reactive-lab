@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -406,9 +407,29 @@ public class BIOEchoServer {
     // ==================== 主方法（演示入口）====================
 
     /**
-     * 演示入口
+     * 演示入口（混合模式：支持命令行参数和交互式菜单）
      *
      * <p><strong>使用方式</strong>：
+     *
+     * <p><strong>方式 1: 交互式菜单（推荐在 IDE 中使用）</strong>
+     * <pre>
+     * # 无参数启动，会显示菜单选择
+     * mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer"
+     *
+     * 输出:
+     * =====================================
+     * 🔧 Lab-06 BIO Echo Server 演示
+     * =====================================
+     * 1. 单线程 BIO Server (阻塞演示)
+     * 2. 多线程 BIO Server (每连接一线程)
+     * 3. 线程池 BIO Server (100 线程)
+     * 4. 自定义线程池大小
+     * 5. 退出
+     *
+     * 请选择 [1-5]:
+     * </pre>
+     *
+     * <p><strong>方式 2: 命令行参数（适合脚本和自动化）</strong>
      * <pre>
      * # 启动单线程服务器
      * mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer" -Dexec.args="single"
@@ -416,7 +437,7 @@ public class BIOEchoServer {
      * # 启动多线程服务器
      * mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer" -Dexec.args="multi"
      *
-     * # 启动线程池服务器（100 线程）
+     * # 启动线程池服务器（指定线程数）
      * mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoServer" -Dexec.args="pool 100"
      * </pre>
      *
@@ -435,12 +456,30 @@ public class BIOEchoServer {
      * ECHO: Hello
      * </pre>
      *
-     * @param args 命令行参数 [模式] [线程池大小]
-     *             模式: single | multi | pool
+     * @param args 命令行参数（可选）[模式] [线程池大小]
+     *             - 如果无参数：显示交互式菜单
+     *             - 如果有参数：模式: single | multi | pool
      * @throws IOException 如果 I/O 错误发生
      */
     public static void main(String[] args) throws IOException {
-        String mode = args.length > 0 ? args[0] : "single";
+        // 优先级 1: 有参数则直接使用参数（适合脚本）
+        if (args.length > 0) {
+            processCommandLineArgs(args);
+        }
+        // 优先级 2: 无参数则显示交互式菜单（适合 IDE）
+        else {
+            displayInteractiveMenu();
+        }
+    }
+
+    /**
+     * 处理命令行参数
+     *
+     * @param args 命令行参数
+     * @throws IOException 如果 I/O 错误发生
+     */
+    private static void processCommandLineArgs(String[] args) throws IOException {
+        String mode = args[0];
         int port = DEFAULT_PORT;
 
         switch (mode.toLowerCase()) {
@@ -458,9 +497,67 @@ public class BIOEchoServer {
                 break;
 
             default:
-                System.err.println("未知模式: " + mode);
+                System.err.println("❌ 未知模式: " + mode);
                 System.err.println("支持的模式: single | multi | pool");
                 System.exit(1);
+        }
+    }
+
+    /**
+     * 显示交互式菜单（在 IDE 中运行无参数时调用）
+     *
+     * @throws IOException 如果 I/O 错误发生
+     */
+    private static void displayInteractiveMenu() throws IOException {
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println("🔧 Lab-06 BIO Echo Server 演示");
+        System.out.println("=====================================");
+        System.out.println("1. 单线程 BIO Server (阻塞演示)");
+        System.out.println("2. 多线程 BIO Server (每连接一线程)");
+        System.out.println("3. 线程池 BIO Server (100 线程)");
+        System.out.println("4. 自定义线程池大小");
+        System.out.println("5. 退出");
+        System.out.println("=====================================");
+        System.out.print("\n请选择 [1-5]: ");
+
+        try (Scanner scanner = new Scanner(System.in)) {
+            String choice = scanner.nextLine().trim();
+
+            int port = DEFAULT_PORT;
+
+            switch (choice) {
+                case "1":
+                    startSingleThreadServer(port);
+                    break;
+
+                case "2":
+                    startMultiThreadServer(port);
+                    break;
+
+                case "3":
+                    startThreadPoolServer(port, 100);
+                    break;
+
+                case "4":
+                    System.out.print("请输入线程池大小 [默认 100]: ");
+                    String sizeInput = scanner.nextLine().trim();
+                    int threadPoolSize = sizeInput.isEmpty() ? 100 : Integer.parseInt(sizeInput);
+                    startThreadPoolServer(port, threadPoolSize);
+                    break;
+
+                case "5":
+                    System.out.println("👋 再见!");
+                    System.exit(0);
+                    break;
+
+                default:
+                    System.err.println("❌ 无效选择，请输入 1-5");
+                    displayInteractiveMenu();
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("❌ 输入错误: " + e.getMessage());
+            displayInteractiveMenu();
         }
     }
 }
