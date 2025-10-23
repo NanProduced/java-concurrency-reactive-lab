@@ -47,7 +47,7 @@ public class NIOEchoClient {
     /**
      * 默认服务器端口
      */
-    private static final int DEFAULT_PORT = 8080;
+    private static final int DEFAULT_PORT = 8081;
 
     /**
      * ByteBuffer 默认大小（1KB）

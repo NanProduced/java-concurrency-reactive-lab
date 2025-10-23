@@ -96,6 +96,20 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Spring Cloud Stream Kafka (反应式消息队列) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-stream-binder-kafka</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Kafka (Kafka 集成) -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
