@@ -37,7 +37,11 @@
       "mcp__serena__think_about_task_adherence",
       "mcp__serena__replace_symbol_body",
       "Bash(mvn clean test-compile:*)",
-      "mcp__serena__insert_before_symbol"
+      "mcp__serena__insert_before_symbol",
+      "Bash(gh issue view:*)",
+      "Bash(git -C \"C:\\Users\\nanpr\\javaProject\\java-concurrency-reactive-lab\" status)",
+      "Bash(git -C \"C:\\Users\\nanpr\\javaProject\\java-concurrency-reactive-lab\" diff .claude/settings.local.json)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
