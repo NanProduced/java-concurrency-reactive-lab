@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -626,9 +627,28 @@ public class ReactorEchoServer {
     // ==================== 主方法（演示入口）====================
 
     /**
-     * 演示入口
+     * 演示入口（混合模式：支持命令行参数和交互式菜单）
      *
      * <p><strong>使用方式</strong>：
+     *
+     * <p><strong>方式 1: 交互式菜单（推荐在 IDE 中使用）</strong>
+     * <pre>
+     * # 无参数启动，会显示菜单选择
+     * mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer"
+     *
+     * 输出:
+     * =====================================
+     * 🔧 Lab-06 主从 Reactor Echo Server 演示
+     * =====================================
+     * 使用主从 Reactor 模式（Netty 架构）
+     * Boss: 1 线程处理 ACCEPT 事件
+     * Worker: N 线程处理 READ/WRITE 事件
+     *
+     * 请输入端口 [默认 8080]:
+     * 请输入 Worker 数量 [默认 4]:
+     * </pre>
+     *
+     * <p><strong>方式 2: 命令行参数（适合脚本和自动化）</strong>
      * <pre>
      * # 启动主从 Reactor Echo Server（默认 CPU 核心数个 Worker）
      * mvn exec:java -Dexec.mainClass="nan.tech.lab06.reactor.ReactorEchoServer"
@@ -664,12 +684,26 @@ public class ReactorEchoServer {
      * 性能提升: 4 倍（充分利用多核）
      * </pre>
      *
-     * @param args 命令行参数 [端口] [Worker数量]
+     * @param args 命令行参数（可选）[端口] [Worker数量]
+     *             - 如果无参数：显示交互式菜单
+     *             - 如果有参数：使用指定配置
      * @throws IOException 如果 I/O 错误发生
      */
     public static void main(String[] args) throws IOException {
-        int port = args.length > 0 ? Integer.parseInt(args[0]) : DEFAULT_PORT;
-        int subReactorCount = args.length > 1 ? Integer.parseInt(args[1]) : DEFAULT_SUB_REACTOR_COUNT;
+        int port;
+        int subReactorCount;
+
+        // 优先级 1: 有参数则直接使用参数（适合脚本）
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+            subReactorCount = args.length > 1 ? Integer.parseInt(args[1]) : DEFAULT_SUB_REACTOR_COUNT;
+        }
+        // 优先级 2: 无参数则显示交互式菜单（适合 IDE）
+        else {
+            MenuChoice choice = displayInteractiveMenu();
+            port = choice.port;
+            subReactorCount = choice.workerCount;
+        }
 
         ReactorEchoServer server = new ReactorEchoServer();
 
@@ -681,5 +715,55 @@ public class ReactorEchoServer {
 
         // 启动服务器
         server.start(port, subReactorCount);
+    }
+
+    /**
+     * 菜单选择结果容器
+     */
+    private static class MenuChoice {
+        int port;
+        int workerCount;
+
+        MenuChoice(int port, int workerCount) {
+            this.port = port;
+            this.workerCount = workerCount;
+        }
+    }
+
+    /**
+     * 显示交互式菜单（在 IDE 中运行无参数时调用）
+     *
+     * @return 用户选择的端口和 Worker 数量
+     */
+    private static MenuChoice displayInteractiveMenu() {
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println("🔧 Lab-06 主从 Reactor Echo Server 演示");
+        System.out.println("=====================================");
+        System.out.println("使用主从 Reactor 模式（Netty 架构）");
+        System.out.println("Boss: 1 线程处理 ACCEPT 事件");
+        System.out.println("Worker: N 线程处理 READ/WRITE 事件");
+        System.out.println("=====================================");
+
+        try (Scanner scanner = new Scanner(System.in)) {
+            // 获取端口
+            System.out.print("\n请输入端口 [默认 8080]: ");
+            String portInput = scanner.nextLine().trim();
+            int port = portInput.isEmpty() ? DEFAULT_PORT : Integer.parseInt(portInput);
+            System.out.println("✅ 端口: " + port);
+
+            // 获取 Worker 数量
+            System.out.print("请输入 Worker 数量 [默认 " + DEFAULT_SUB_REACTOR_COUNT + "]: ");
+            String workerInput = scanner.nextLine().trim();
+            int workerCount = workerInput.isEmpty() ? DEFAULT_SUB_REACTOR_COUNT : Integer.parseInt(workerInput);
+            System.out.println("✅ Worker 数量: " + workerCount);
+
+            return new MenuChoice(port, workerCount);
+
+        } catch (NumberFormatException e) {
+            System.err.println("❌ 输入错误: " + e.getMessage());
+            System.err.println("使用默认配置: 端口 8080, Worker 数量 " + DEFAULT_SUB_REACTOR_COUNT);
+            return new MenuChoice(DEFAULT_PORT, DEFAULT_SUB_REACTOR_COUNT);
+        }
     }
 }

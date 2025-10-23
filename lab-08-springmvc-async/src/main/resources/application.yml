@@ -1,0 +1,124 @@
+# Lab-08 Spring MVC Async 配置
+spring:
+  application:
+    name: lab-08-springmvc-async
+
+  # MVC 异步配置
+  mvc:
+    async:
+      request-timeout: 30000  # 全局默认超时 30 秒
+
+  # 任务执行配置 (Spring Boot 3.x)
+  task:
+    execution:
+      pool:
+        core-size: 10          # 核心线程数 (IO 密集型: CPU * 2)
+        max-size: 50           # 最大线程数 (IO 密集型: CPU * 4)
+        queue-capacity: 100    # 队列容量
+        keep-alive: "60s"      # 线程存活时间
+      thread-name-prefix: "async-mvc-"
+      shutdown:
+        await-termination: true
+        await-termination-period: "30s"
+
+  # Jackson 配置
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  tomcat:
+    threads:
+      max: 200              # Tomcat 最大线程数
+      min-spare: 10         # 最小空闲线程数
+    accept-count: 100       # 请求队列长度
+
+# Actuator 监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,threaddump
+  endpoint:
+    health:
+      show-details: always
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    nan.tech.lab08: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter: TRACE
+
+# Resilience4j 容错配置
+resilience4j:
+  # 断路器配置
+  circuitbreaker:
+    instances:
+      externalService:
+        # 滑动窗口类型：COUNT_BASED（基于请求数）或 TIME_BASED（基于时间）
+        sliding-window-type: COUNT_BASED
+        # 滑动窗口大小：10 个请求
+        sliding-window-size: 10
+        # 最小调用次数：至少 5 次调用后才会计算失败率
+        minimum-number-of-calls: 5
+        # 失败率阈值：50%
+        failure-rate-threshold: 50
+        # 慢调用阈值：2 秒
+        slow-call-duration-threshold: 2s
+        # 慢调用率阈值：100%（全部慢调用才熔断）
+        slow-call-rate-threshold: 100
+        # 等待时长：熔断后等待 10 秒进入半开状态
+        wait-duration-in-open-state: 10s
+        # 半开状态允许的调用数：3 个请求
+        permitted-number-of-calls-in-half-open-state: 3
+        # 自动从 OPEN 转换到 HALF_OPEN
+        automatic-transition-from-open-to-half-open-enabled: true
+        # 记录的异常
+        record-exceptions:
+          - java.lang.RuntimeException
+          - java.util.concurrent.TimeoutException
+
+  # 限流器配置
+  ratelimiter:
+    instances:
+      apiRateLimiter:
+        # 限流周期：1 秒
+        limit-refresh-period: 1s
+        # 每个周期最大请求数：5 个
+        limit-for-period: 5
+        # 超时等待时间：0 秒（不等待，直接拒绝）
+        timeout-duration: 0s
+
+  # 重试配置
+  retry:
+    instances:
+      externalService:
+        # 最大重试次数：3 次
+        max-attempts: 3
+        # 重试间隔：500 毫秒
+        wait-duration: 500ms
+        # 重试策略：固定间隔
+        enable-exponential-backoff: false
+        # 如果启用指数退避，退避倍数：2
+        exponential-backoff-multiplier: 2
+        # 重试的异常
+        retry-exceptions:
+          - java.lang.RuntimeException
+          - java.util.concurrent.TimeoutException
+
+  # 隔离舱配置
+  bulkhead:
+    instances:
+      externalService:
+        # 最大并发调用数：5 个
+        max-concurrent-calls: 5
+        # 最大等待时长：0 秒（不等待，直接拒绝）
+        max-wait-duration: 0s

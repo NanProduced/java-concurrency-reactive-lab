@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -249,9 +250,28 @@ public class BIOEchoClient {
     // ==================== 主方法（演示入口）====================
 
     /**
-     * 演示入口
+     * 演示入口（混合模式：支持命令行参数和交互式菜单）
      *
      * <p><strong>使用方式</strong>：
+     *
+     * <p><strong>方式 1: 交互式菜单（推荐在 IDE 中使用）</strong>
+     * <pre>
+     * # 无参数启动，会显示菜单选择
+     * mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoClient"
+     *
+     * 输出:
+     * =====================================
+     * 🔧 Lab-06 BIO Echo Client 演示
+     * =====================================
+     * 1. 单客户端模式 (发送消息并验证)
+     * 2. 并发测试模式 (10 客户端, 每客户端 10 消息)
+     * 3. 自定义并发测试
+     * 4. 退出
+     *
+     * 请选择 [1-4]:
+     * </pre>
+     *
+     * <p><strong>方式 2: 命令行参数（适合脚本和自动化）</strong>
      * <pre>
      * # 单客户端模式（发送 10 条消息）
      * mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoClient" -Dexec.args="single 10"
@@ -278,19 +298,31 @@ public class BIOEchoClient {
      * mvn exec:java -Dexec.mainClass="nan.tech.lab06.bio.BIOEchoClient" -Dexec.args="concurrent 10 10"
      * </pre>
      *
-     * @param args 命令行参数 [模式] [参数...]
-     *             单客户端: single [消息数]
-     *             并发测试: concurrent [客户端数] [每客户端消息数]
+     * @param args 命令行参数（可选）[模式] [参数...]
+     *             - 如果无参数：显示交互式菜单
+     *             - 如果有参数：
+     *               单客户端: single [消息数]
+     *               并发测试: concurrent [客户端数] [每客户端消息数]
      * @throws Exception 如果错误发生
      */
     public static void main(String[] args) throws Exception {
-        if (args.length == 0) {
-            System.err.println("用法:");
-            System.err.println("  单客户端:   java BIOEchoClient single [消息数]");
-            System.err.println("  并发测试:   java BIOEchoClient concurrent [客户端数] [每客户端消息数]");
-            System.exit(1);
+        // 优先级 1: 有参数则直接使用参数（适合脚本）
+        if (args.length > 0) {
+            processCommandLineArgs(args);
         }
+        // 优先级 2: 无参数则显示交互式菜单（适合 IDE）
+        else {
+            displayInteractiveMenu();
+        }
+    }
 
+    /**
+     * 处理命令行参数
+     *
+     * @param args 命令行参数
+     * @throws Exception 如果错误发生
+     */
+    private static void processCommandLineArgs(String[] args) throws Exception {
         String mode = args[0];
         String host = DEFAULT_HOST;
         int port = DEFAULT_PORT;
@@ -308,9 +340,71 @@ public class BIOEchoClient {
                 break;
 
             default:
-                System.err.println("未知模式: " + mode);
+                System.err.println("❌ 未知模式: " + mode);
                 System.err.println("支持的模式: single | concurrent");
                 System.exit(1);
+        }
+    }
+
+    /**
+     * 显示交互式菜单（在 IDE 中运行无参数时调用）
+     *
+     * @throws Exception 如果错误发生
+     */
+    private static void displayInteractiveMenu() throws Exception {
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println("🔧 Lab-06 BIO Echo Client 演示");
+        System.out.println("=====================================");
+        System.out.println("1. 单客户端模式 (发送消息并验证)");
+        System.out.println("2. 并发测试模式 (10 客户端, 每客户端 10 消息)");
+        System.out.println("3. 自定义并发测试");
+        System.out.println("4. 退出");
+        System.out.println("=====================================");
+        System.out.print("\n请选择 [1-4]: ");
+
+        try (Scanner scanner = new Scanner(System.in)) {
+            String choice = scanner.nextLine().trim();
+
+            String host = DEFAULT_HOST;
+            int port = DEFAULT_PORT;
+
+            switch (choice) {
+                case "1":
+                    System.out.print("请输入消息数量 [默认 10]: ");
+                    String msgInput = scanner.nextLine().trim();
+                    int messageCount = msgInput.isEmpty() ? 10 : Integer.parseInt(msgInput);
+                    runSingleClient(host, port, messageCount);
+                    break;
+
+                case "2":
+                    runConcurrentClients(host, port, 10, 10);
+                    break;
+
+                case "3":
+                    System.out.print("请输入客户端数量 [默认 10]: ");
+                    String clientInput = scanner.nextLine().trim();
+                    int clientCount = clientInput.isEmpty() ? 10 : Integer.parseInt(clientInput);
+
+                    System.out.print("请输入每客户端消息数 [默认 10]: ");
+                    String msgPerClientInput = scanner.nextLine().trim();
+                    int messagesPerClient = msgPerClientInput.isEmpty() ? 10 : Integer.parseInt(msgPerClientInput);
+
+                    runConcurrentClients(host, port, clientCount, messagesPerClient);
+                    break;
+
+                case "4":
+                    System.out.println("👋 再见!");
+                    System.exit(0);
+                    break;
+
+                default:
+                    System.err.println("❌ 无效选择，请输入 1-4");
+                    displayInteractiveMenu();
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("❌ 输入错误: " + e.getMessage());
+            displayInteractiveMenu();
         }
     }
 }

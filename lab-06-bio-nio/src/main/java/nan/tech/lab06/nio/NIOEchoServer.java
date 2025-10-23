@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -545,11 +546,28 @@ public class NIOEchoServer {
     // ==================== 主方法（演示入口）====================
 
     /**
-     * 演示入口
+     * 演示入口（混合模式：支持命令行参数和交互式菜单）
      *
      * <p><strong>使用方式</strong>：
+     *
+     * <p><strong>方式 1: 交互式菜单（推荐在 IDE 中使用）</strong>
      * <pre>
-     * # 启动 NIO Echo Server
+     * # 无参数启动，会显示菜单选择
+     * mvn exec:java -Dexec.mainClass="nan.tech.lab06.nio.NIOEchoServer"
+     *
+     * 输出:
+     * =====================================
+     * 🔧 Lab-06 NIO Echo Server 演示
+     * =====================================
+     * 使用单 Reactor 模式处理并发连接
+     * （一个线程通过 Selector 多路复用处理所有 I/O 事件）
+     *
+     * 请输入端口 [默认 8080]:
+     * </pre>
+     *
+     * <p><strong>方式 2: 命令行参数（适合脚本和自动化）</strong>
+     * <pre>
+     * # 启动 NIO Echo Server（默认端口）
      * mvn exec:java -Dexec.mainClass="nan.tech.lab06.nio.NIOEchoServer"
      *
      * # 指定端口
@@ -582,11 +600,22 @@ public class NIOEchoServer {
      * # 对比: BIO 多线程模式，CPU 占用高（上下文切换）
      * </pre>
      *
-     * @param args 命令行参数 [端口]
+     * @param args 命令行参数（可选）[端口]
+     *             - 如果无参数：显示交互式菜单
+     *             - 如果有参数：使用指定端口
      * @throws IOException 如果 I/O 错误发生
      */
     public static void main(String[] args) throws IOException {
-        int port = args.length > 0 ? Integer.parseInt(args[0]) : DEFAULT_PORT;
+        int port;
+
+        // 优先级 1: 有参数则直接使用参数（适合脚本）
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+        }
+        // 优先级 2: 无参数则显示交互式菜单（适合 IDE）
+        else {
+            port = displayInteractiveMenu();
+        }
 
         NIOEchoServer server = new NIOEchoServer();
 
@@ -598,5 +627,37 @@ public class NIOEchoServer {
 
         // 启动服务器
         server.start(port);
+    }
+
+    /**
+     * 显示交互式菜单（在 IDE 中运行无参数时调用）
+     *
+     * @return 用户选择的端口号
+     */
+    private static int displayInteractiveMenu() {
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println("🔧 Lab-06 NIO Echo Server 演示");
+        System.out.println("=====================================");
+        System.out.println("使用单 Reactor 模式处理并发连接");
+        System.out.println("（一个线程通过 Selector 多路复用处理所有 I/O 事件）");
+        System.out.println("=====================================");
+        System.out.print("\n请输入端口 [默认 8080]: ");
+
+        try (Scanner scanner = new Scanner(System.in)) {
+            String portInput = scanner.nextLine().trim();
+            if (portInput.isEmpty()) {
+                System.out.println("✅ 使用默认端口: 8080");
+                return DEFAULT_PORT;
+            } else {
+                int port = Integer.parseInt(portInput);
+                System.out.println("✅ 使用端口: " + port);
+                return port;
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("❌ 输入错误: " + e.getMessage());
+            System.err.println("使用默认端口: 8080");
+            return DEFAULT_PORT;
+        }
     }
 }

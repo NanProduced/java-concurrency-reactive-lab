@@ -278,13 +278,13 @@ netstat -an | grep TIME_WAIT | wc -l
 
 2. **调整系统参数** (Linux):
    ```bash
-   # 启用 TIME_WAIT 快速回收（谨慎使用）
+   # 审慎调整以下参数
    net.ipv4.tcp_tw_reuse = 1
-   net.ipv4.tcp_tw_recycle = 1  # 不推荐，可能导致问题
-
-   # 减少 TIME_WAIT 超时时间
    net.ipv4.tcp_fin_timeout = 30
    ```
+   - `net.ipv4.tcp_tw_reuse` 仅对客户端短连接生效，并要求启用 TCP 时间戳；生产环境需经过验证后再开启。
+   - `net.ipv4.tcp_fin_timeout` 只会缩短 FIN_WAIT2 的停留时间，对 TIME_WAIT 没有帮助。
+   - `net.ipv4.tcp_tw_recycle` 已在 Linux 4.12 中移除，即便旧内核开启也会导致 NAT 环境异常，请勿启用。
 
 3. **使用连接池**: 复用连接，减少频繁建立/关闭
 
@@ -534,7 +534,7 @@ while (retries < maxRetries) {
         break;
     } catch (IOException e) {
         retries++;
-        int delay = baseDelay * (1 << retries); // 1s, 2s, 4s, 8s, 16s
+        int delay = baseDelay * (1 << (retries - 1)); // 1s, 2s, 4s, 8s, 16s
         Thread.sleep(delay);
     }
 }
@@ -598,6 +598,9 @@ cat /proc/sys/net/ipv4/ip_local_port_range
    net.ipv4.tcp_tw_reuse = 1
    net.ipv4.tcp_fin_timeout = 30
    ```
+   - `net.ipv4.tcp_tw_reuse` 仅对客户端短连接生效，并要求启用 TCP 时间戳；生产环境需经过验证后再开启。
+   - `net.ipv4.tcp_fin_timeout` 只会缩短 FIN_WAIT2 的停留时间，对 TIME_WAIT 没有帮助。
+   - `net.ipv4.tcp_tw_recycle` 已在 Linux 4.12 中移除，即便旧内核开启也会导致 NAT 环境异常，请勿启用。
 
 ### 7.3 诊断 CLOSE_WAIT 问题
 
