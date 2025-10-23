@@ -21,6 +21,12 @@
             <groupId>nan.tech</groupId>
             <artifactId>lab-00-foundation</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Spring Boot WebFlux (反应式Web框架，基于Netty) -->
@@ -70,6 +76,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Logback (日志框架，明确优先于 slf4j-simple) -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+
         <!-- Spring Boot Actuator (监控端点，用于性能观测) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -91,12 +103,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- WebTestClient (WebFlux异步测试) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <!-- Awaitility (异步测试) -->
         <dependency>
@@ -151,7 +157,6 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
                 <executions>
                     <execution>
                         <goals>

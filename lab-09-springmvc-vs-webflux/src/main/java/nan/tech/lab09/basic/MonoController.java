@@ -113,8 +113,8 @@ public class MonoController {
                     // 📌 @教学: doOnNext 在值到达时调用，但 Mono 最多调用一次
                     log.info("[Mono.simple] 返回值: {}", msg);
                 })
-                .doOnComplete(() -> {
-                    // 📌 @教学: doOnComplete 在 Mono 完成时调用一次
+                .doOnSuccess(msg -> {
+                    // 📌 @教学: doOnSuccess 在 Mono 成功完成时调用一次（包含值）
                     log.info("[Mono.simple] Mono 完成");
                 });
     }
@@ -253,13 +253,13 @@ public class MonoController {
      */
     @GetMapping("/empty")
     public Mono<String> emptyMono() {
-        return Mono.empty()
+        return Mono.<String>empty()
                 .doOnNext(value -> {
                     // 📌 @教学: 这个代码永远不会执行，因为没有值
                     log.info("[Mono.empty] 这一行永远不会打印");
                 })
-                .doOnComplete(() -> {
-                    // 📌 @教学: 这个代码会执行，表示 Mono 完成
+                .doOnSuccess(value -> {
+                    // 📌 @教学: doOnSuccess 在 Mono 完成时调用（value可能为null）
                     log.info("[Mono.empty] Mono 完成 (无值)");
                 })
                 .defaultIfEmpty("默认值")  // 如果空，返回默认值
@@ -301,7 +301,7 @@ public class MonoController {
      */
     @GetMapping("/error")
     public Mono<String> errorMono() {
-        return Mono.error(new RuntimeException("模拟错误: 网络连接超时"))
+        return Mono.<String>error(new RuntimeException("模拟错误: 网络连接超时"))
                 .doOnError(error -> {
                     // 📌 @教学: doOnError 可以观察错误，但不改变它
                     log.error("[Mono.error] 捕获错误: {}", error.getMessage());

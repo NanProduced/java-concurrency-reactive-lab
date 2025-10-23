@@ -41,7 +41,9 @@
       "Bash(gh issue view:*)",
       "Bash(git -C \"C:\\Users\\nanpr\\javaProject\\java-concurrency-reactive-lab\" status)",
       "Bash(git -C \"C:\\Users\\nanpr\\javaProject\\java-concurrency-reactive-lab\" diff .claude/settings.local.json)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(mvn test:*)",
+      "Bash(mvn dependency:tree:*)"
     ],
     "deny": [],
     "ask": []

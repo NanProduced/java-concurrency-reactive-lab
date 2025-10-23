@@ -214,7 +214,7 @@ public class FluxController {
     @GetMapping("/delay")
     public Flux<Integer> delayElementFlux() {
         return Flux.range(1, 3)
-                .delayElement(Duration.ofMillis(500))
+                .delayElements(Duration.ofMillis(500))
                 .doOnNext(num -> {
                     // 📌 @教学: 这里的日志输出会间隔 500ms
                     log.info("[Flux.delay] 发送元素 {} (间隔 500ms)", num);
@@ -263,7 +263,7 @@ public class FluxController {
                 .flatMap(msg -> {
                     // 📌 @教学: 这里模拟了一个错误的操作
                     // flatMap 允许我们在某个条件下返回一个错误流
-                    return Flux.error(new RuntimeException("模拟错误: 数据库连接失败"));
+                    return Flux.<String>error(new RuntimeException("模拟错误: 数据库连接失败"));
                 })
                 .onErrorResume(error -> {
                     // 📌 @教学: 捕获错误并发送替代值

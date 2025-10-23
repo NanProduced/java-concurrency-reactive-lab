@@ -107,12 +107,12 @@ public class SubscriptionController {
                 .doOnNext(value -> {
                     log.info("[subscription] [时刻 3] 执行 doOnNext: {}", value);
                 })
-                .doOnComplete(() -> {
-                    log.info("[subscription] [时刻 4] 执行 onComplete");
-                })
                 .map(value -> {
                     log.info("[subscription] [时刻 3] 执行 map 转换");
                     return "转换后的 " + value;
+                })
+                .doOnSuccess(value -> {
+                    log.info("[subscription] [时刻 4] 执行 onSuccess: {}", value);
                 });
 
         log.info("[subscription] [时刻 2] 定义完毕，现在订阅 Mono");
@@ -179,8 +179,8 @@ public class SubscriptionController {
                 .doOnNext(num -> {
                     log.info("[subscription] [事件 3] 看到最终值: {}", num);
                 })
-                .doOnComplete(() -> {
-                    log.info("[subscription] [完成] Mono 处理完毕");
+                .doOnSuccess(num -> {
+                    log.info("[subscription] [完成] Mono 处理完毕，最终值: {}", num);
                 });
     }
 
@@ -328,12 +328,11 @@ public class SubscriptionController {
                     if (value < 20) {
                         throw new RuntimeException("值太小: " + value);
                     }
-                    return value;
+                    return String.valueOf(value);
                 })
                 .doOnNext(value -> {
                     // 📌 @教学: 如果上面抛出异常，这里不会执行
                     log.info("[subscription] 这一行不会执行，因为发生了错误");
-                    return value;
                 })
                 .doOnError(error -> {
                     // 📌 @教学: 错误发生时，doOnError 会被调用
@@ -344,9 +343,9 @@ public class SubscriptionController {
                     log.info("[subscription] 错误已恢复");
                     return Mono.just("错误恢复后的默认值");
                 })
-                .doOnComplete(() -> {
+                .doOnSuccess(value -> {
                     // 📌 @教学: 注意这里会执行，因为我们在 onErrorResume 中恢复了
-                    log.info("[subscription] Mono 完成");
+                    log.info("[subscription] Mono 完成，值: {}", value);
                 });
     }
 
