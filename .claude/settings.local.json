@@ -43,7 +43,9 @@
       "Bash(git -C \"C:\\Users\\nanpr\\javaProject\\java-concurrency-reactive-lab\" diff .claude/settings.local.json)",
       "Bash(rm:*)",
       "Bash(mvn test:*)",
-      "Bash(mvn dependency:tree:*)"
+      "Bash(mvn dependency:tree:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []
