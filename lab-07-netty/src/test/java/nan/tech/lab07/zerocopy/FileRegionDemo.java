@@ -136,8 +136,8 @@ public class FileRegionDemo {
                     if (total < 0) {
                         logger.info("传输进度: {} 字节", progress);
                     } else {
-                        logger.info("传输进度: {} / {} ({:.2f}%)",
-                            progress, total, (progress * 100.0 / total));
+                        logger.info("传输进度: {} / {} ({}%)",
+                            progress, total, String.format("%.2f", progress * 100.0 / total));
                     }
                 }
 

@@ -202,7 +202,7 @@ public class CompositeByteBufDemo {
 
         // 性能提升
         double speedup = (double) duration1 / duration2;
-        logger.info("性能提升: {:.2f}x", speedup);
+        logger.info("性能提升: {}x", String.format("%.2f", speedup));
 
         // 释放资源
         composite.release();

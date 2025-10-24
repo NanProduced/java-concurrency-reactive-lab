@@ -283,8 +283,9 @@ public class StressTestClient {
             double avgLatencyMs = totalLatencyNanos.get() / (double) Math.max(successCount.get(), 1) / 1_000_000;
             double successRate = (successCount.get() * 100.0) / Math.max(totalRequests.get(), 1);
 
-            logger.info("【监控】已运行 {} 秒 | TPS: {:.2f} | 成功率: {:.2f}% | 平均延迟: {:.3f} ms | 背压次数: {}",
-                elapsed, tps, successRate, avgLatencyMs, backpressureCount.get());
+            logger.info("【监控】已运行 {} 秒 | TPS: {} | 成功率: {}% | 平均延迟: {} ms | 背压次数: {}",
+                elapsed, String.format("%.2f", tps), String.format("%.2f", successRate),
+                String.format("%.3f", avgLatencyMs), backpressureCount.get());
 
             // 内存监控
             Runtime runtime = Runtime.getRuntime();
@@ -315,37 +316,39 @@ public class StressTestClient {
         logger.info("\n========================================");
         logger.info("         最终测试报告");
         logger.info("========================================");
-        logger.info("测试持续时间: {:.2f} 秒 ({:.2f} 分钟)", durationSec, durationSec / 60);
+        logger.info("测试持续时间: {} 秒 ({} 分钟)",
+            String.format("%.2f", durationSec), String.format("%.2f", durationSec / 60));
         logger.info("并发连接数: {}", connections);
         logger.info("========================================");
         logger.info("总请求数: {}", totalRequests.get());
         logger.info("成功请求: {}", successCount.get());
         logger.info("失败请求: {}", failureCount.get());
-        logger.info("成功率: {:.2f}%", successRate);
+        logger.info("成功率: {}%", String.format("%.2f", successRate));
         logger.info("========================================");
-        logger.info("吞吐量 (TPS): {:.2f} req/s", tps);
-        logger.info("平均延迟: {:.3f} ms", avgLatencyMs);
-        logger.info("P99 延迟: {:.3f} ms", p99LatencyMs);
+        logger.info("吞吐量 (TPS): {} req/s", String.format("%.2f", tps));
+        logger.info("平均延迟: {} ms", String.format("%.3f", avgLatencyMs));
+        logger.info("P99 延迟: {} ms", String.format("%.3f", p99LatencyMs));
         logger.info("========================================");
         logger.info("背压触发次数: {}", backpressureCount.get());
-        logger.info("背压触发率: {:.4f}%",
-            (backpressureCount.get() * 100.0 / Math.max(totalRequests.get(), 1)));
+        logger.info("背压触发率: {}%",
+            String.format("%.4f", backpressureCount.get() * 100.0 / Math.max(totalRequests.get(), 1)));
         logger.info("========================================");
 
         // 内存统计
         Runtime runtime = Runtime.getRuntime();
         long usedMemory = (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024);
         long maxMemory = runtime.maxMemory() / (1024 * 1024);
-        logger.info("内存使用: {} MB / {} MB ({:.2f}%)",
-            usedMemory, maxMemory, (usedMemory * 100.0 / maxMemory));
+        logger.info("内存使用: {} MB / {} MB ({}%)",
+            usedMemory, maxMemory, String.format("%.2f", usedMemory * 100.0 / maxMemory));
         logger.info("========================================\n");
 
         // 稳定性评估
         if (successRate >= 99.9 && backpressureCount.get() < totalRequests.get() * 0.01) {
             logger.info("✅ 稳定性测试通过：成功率 ≥ 99.9%，背压触发率 < 1%");
         } else {
-            logger.warn("⚠️ 稳定性测试未通过：成功率 {:.2f}%，背压触发率 {:.4f}%",
-                successRate, (backpressureCount.get() * 100.0 / totalRequests.get()));
+            double backpressureRate = backpressureCount.get() * 100.0 / totalRequests.get();
+            logger.warn("⚠️ 稳定性测试未通过：成功率 {}%，背压触发率 {}%",
+                String.format("%.2f", successRate), String.format("%.4f", backpressureRate));
         }
     }
 

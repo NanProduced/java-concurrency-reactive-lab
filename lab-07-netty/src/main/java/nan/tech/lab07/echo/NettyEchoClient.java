@@ -261,18 +261,18 @@ public class NettyEchoClient {
         logger.info("总请求数: {}", totalRequests);
         logger.info("成功请求: {}", successCount.get());
         logger.info("失败请求: {}", failureCount.get());
-        logger.info("成功率: {:.2f}%", successRate);
+        logger.info("成功率: {}%", String.format("%.2f", successRate));
         logger.info("========================================");
-        logger.info("总耗时: {:.2f} 秒", durationSeconds);
-        logger.info("吞吐量 (TPS): {:.2f} req/s", tps);
-        logger.info("平均延迟: {:.3f} ms", avgLatencyMs);
+        logger.info("总耗时: {} 秒", String.format("%.2f", durationSeconds));
+        logger.info("吞吐量 (TPS): {} req/s", String.format("%.2f", tps));
+        logger.info("平均延迟: {} ms", String.format("%.3f", avgLatencyMs));
         logger.info("========================================");
 
         // 对比 Lab-06
         logger.info("\n与 Lab-06 对比：");
         logger.info("  Lab-06 TPS: ~50,000 req/s");
-        logger.info("  Lab-07 TPS: {:.2f} req/s (提升 {:.1f}%)",
-            tps, (tps - 50000) / 50000 * 100);
+        logger.info("  Lab-07 TPS: {} req/s (提升 {}%)",
+            String.format("%.2f", tps), String.format("%.1f", (tps - 50000) / 50000 * 100));
         logger.info("========================================\n");
     }
 

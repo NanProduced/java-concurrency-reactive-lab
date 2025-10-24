@@ -187,8 +187,9 @@ public class BackpressureDemo {
                     // ❌ 缓冲区满，丢弃消息（丢弃策略）
                     long dropped = droppedCount.incrementAndGet();
                     if (dropped % 100 == 0) {
-                        logger.warn("【丢弃策略】背压触发，已丢弃 {} 条消息（总计 {} 条，丢弃率 {:.2f}%）",
-                            dropped, totalCount.get(), (dropped * 100.0 / totalCount.get()));
+                        double dropRate = dropped * 100.0 / totalCount.get();
+                        logger.warn("【丢弃策略】背压触发，已丢弃 {} 条消息（总计 {} 条，丢弃率 {}%）",
+                            dropped, totalCount.get(), String.format("%.2f", dropRate));
                     }
                     // 消息已在 finally 块中释放
                 }
@@ -213,9 +214,9 @@ public class BackpressureDemo {
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) {
-            logger.info("【丢弃策略】连接关闭 - 总计 {} 条消息，丢弃 {} 条（丢弃率 {:.2f}%）",
-                totalCount.get(), droppedCount.get(),
-                droppedCount.get() * 100.0 / totalCount.get());
+            double dropRate = droppedCount.get() * 100.0 / totalCount.get();
+            logger.info("【丢弃策略】连接关闭 - 总计 {} 条消息，丢弃 {} 条（丢弃率 {}%）",
+                totalCount.get(), droppedCount.get(), String.format("%.2f", dropRate));
         }
 
         @Override
