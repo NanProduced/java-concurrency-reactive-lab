@@ -135,11 +135,11 @@ public class ZeroCopyBenchmark {
                 double traditionalThroughput = (size / (1024.0 * 1024.0)) / (traditionalTime / 1_000_000_000.0);
                 double zeroCopyThroughput = (size / (1024.0 * 1024.0)) / (zeroCopyTime / 1_000_000_000.0);
 
-                logger.info("【传统方式】耗时: {} ms | 吞吐量: {:.2f} MB/s",
-                    TimeUnit.NANOSECONDS.toMillis(traditionalTime), traditionalThroughput);
-                logger.info("【零拷贝】  耗时: {} ms | 吞吐量: {:.2f} MB/s",
-                    TimeUnit.NANOSECONDS.toMillis(zeroCopyTime), zeroCopyThroughput);
-                logger.info("【性能提升】：{:.2f}x\n", speedup);
+                logger.info("【传统方式】耗时: {} ms | 吞吐量: {} MB/s",
+                    TimeUnit.NANOSECONDS.toMillis(traditionalTime), String.format("%.2f", traditionalThroughput));
+                logger.info("【零拷贝】  耗时: {} ms | 吞吐量: {} MB/s",
+                    TimeUnit.NANOSECONDS.toMillis(zeroCopyTime), String.format("%.2f", zeroCopyThroughput));
+                logger.info("【性能提升】：{}x\n", String.format("%.2f", speedup));
 
             } finally {
                 // 清理临时文件
@@ -206,7 +206,7 @@ public class ZeroCopyBenchmark {
                 logger.info("【零拷贝】  耗时: {} μs ({} ms)",
                     TimeUnit.NANOSECONDS.toMicros(zeroCopyTime),
                     TimeUnit.NANOSECONDS.toMillis(zeroCopyTime));
-                logger.info("【性能提升】：{:.2f}x\n", speedup);
+                logger.info("【性能提升】：{}x\n", String.format("%.2f", speedup));
 
             } finally {
                 // 释放资源
@@ -278,7 +278,7 @@ public class ZeroCopyBenchmark {
 
             logger.info("【传统方式】内存分配: {} MB", memUsed1 / (1024 * 1024));
             logger.info("【零拷贝】  内存分配: {} MB", memUsed2 / (1024 * 1024));
-            logger.info("【内存节省】：{:.2f}x\n", (double) memUsed1 / Math.max(memUsed2, 1));
+            logger.info("【内存节省】：{}x\n", String.format("%.2f", (double) memUsed1 / Math.max(memUsed2, 1)));
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

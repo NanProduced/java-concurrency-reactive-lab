@@ -175,9 +175,10 @@ public class FlowControlHandler extends ChannelDuplexHandler {
 
         long rejected = rejectedCount.get();
         if (rejected % 100 == 0) {
-            logger.warn("【流量控制】拒绝请求：原因={}, 总拒绝数={}, 当前待处理={}, 拒绝率={:.2f}%",
+            double rejectRate = rejected * 100.0 / (acceptedCount.get() + rejected);
+            logger.warn("【流量控制】拒绝请求：原因={}, 总拒绝数={}, 当前待处理={}, 拒绝率={}%",
                 reason, rejected, currentPending.get(),
-                (rejected * 100.0 / (acceptedCount.get() + rejected)));
+                String.format("%.2f", rejectRate));
         }
 
         switch (rejectStrategy) {
@@ -268,9 +269,10 @@ public class FlowControlHandler extends ChannelDuplexHandler {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         long total = acceptedCount.get() + rejectedCount.get();
-        logger.info("【流量控制】连接关闭 - 接受={}, 拒绝={}, 总计={}, 拒绝率={:.2f}%",
+        double rejectRate = rejectedCount.get() * 100.0 / total;
+        logger.info("【流量控制】连接关闭 - 接受={}, 拒绝={}, 总计={}, 拒绝率={}%",
             acceptedCount.get(), rejectedCount.get(), total,
-            (rejectedCount.get() * 100.0 / total));
+            String.format("%.2f", rejectRate));
 
         ctx.fireChannelInactive();
     }

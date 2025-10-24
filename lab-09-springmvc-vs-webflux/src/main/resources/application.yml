@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: lab-09-springmvc-vs-webflux
+
+  # R2DBC 数据库配置 (异步反应式数据库)
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ""
+    pool:
+      initial-size: 5
+      max-size: 20
+      validation-query: SELECT 1
+      max-idle-time: PT30M
+
+  # JPA 配置 (用于 H2 初始化)
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  # H2 数据库控制台 (可选，用于测试)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # WebFlux 配置
+  webflux:
+    # 基础路径
+    base-path: /
+    # 默认格式化程序
+    format:
+      date: yyyy-MM-dd
+      time: HH:mm:ss
+      date-time: yyyy-MM-dd HH:mm:ss
+
+  # Jackson 配置
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    default-property-inclusion: non_null
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  # 超时设置
+  shutdown: graceful
+  shutdown-wait-time: 30s
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    nan.tech: DEBUG
+    org.springframework: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# 管理端点 (Actuator)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# 自定义配置
+app:
+  name: Lab-09 Spring WebFlux
+  version: 1.0.0-SNAPSHOT
+  author: Claude Code + Compounding Engineering
