@@ -24,6 +24,8 @@
         <module>lab-06-bio-nio</module>
         <module>lab-07-netty</module>
         <module>lab-08-springmvc-async</module>
+        <module>lab-09-springmvc-vs-webflux</module>
+        <module>lab-10-reactor-core</module>
     </modules>
 
     <!-- 属性定义 -->
